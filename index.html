@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rhetoric Rescue - 遊戲首頁</title>
+
+    <style>
+        body {
+            font-family: "Inter", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #d9e4ff, #fef7ff);
+            animation: bgmove 10s infinite alternate ease-in-out;
+        }
+
+        @keyframes bgmove {
+            0% { background: linear-gradient(135deg, #d9e4ff, #fef7ff); }
+            50% { background: linear-gradient(135deg, #f9e3ff, #e0f7ff); }
+            100% { background: linear-gradient(135deg, #e5f3ff, #fff0f6); }
+        }
+
+        .container {
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            max-width: 480px;
+            width: 85%;
+        }
+
+        h1 {
+            margin: 0 0 20px 0;
+            font-size: 2rem;
+            color: #333;
+            letter-spacing: 1px;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        a.button {
+            display: inline-block;
+            padding: 15px 35px;
+            background: #4CAF50;
+            color: white;
+            font-size: 1.2rem;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: 0.2s ease;
+        }
+
+        a.button:hover {
+            background: #43a047;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.15);
+        }
+
+        .footer {
+            margin-top: 25px;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🎉 Rhetoric Rescue 線上測驗 🎉</h1>
+        <p>世新大學語藝學課程｜快速測驗與複習</p>
+
+        <a class="button" href="RG.html">開始測驗</a>
+
+        <div class="footer">© 2025 世新大學語藝學課程</div>
+    </div>
+</body>
+</html>
