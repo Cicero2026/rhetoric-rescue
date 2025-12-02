@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rhetoric Flower Quiz 🌸</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: linear-gradient(135deg, #fdfbfb, #ebedee);
+        }
+        .option-button {
+            transition: all 0.15s;
+        }
+        .option-button:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+        .correct-answer {
+            background-color: #22c55e !important;
+            color: #ffffff !important;
+            border-color: #16a34a !important;
+        }
+        .incorrect-answer {
+            background-color: #ef4444 !important;
+            color: #ffffff !important;
+            border-color: #b91c1c !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+    <div class="max-w-4xl mx-auto bg-white/90 backdrop-blur-md shadow-2xl rounded-2xl p-6 md:p-8">
+        <h1 class="text-3xl md:text-4xl font-bold text-center text-slate-800 mb-2">
+            Rhetoric Flower Quiz 🌸
+        </h1>
+        <p class="text-center text-slate-500 mb-6">
+            每次隨機練習 5 題。答對一題長出一朵花，五朵花就會出現「你好棒！」✨
+        </p>
+
+        <!-- 花園 & 狀態列 -->
+        <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="bg-pink-50 border border-pink-200 rounded-xl p-4 flex-1">
+                <p class="text-sm font-semibold text-pink-700 mb-1">
+                    🌸 小花花花園（答對題目會長出花）
+                </p>
+                <div id="flower-garden" class="min-h-[2.5rem] flex flex-wrap items-center gap-1 text-2xl">
+                    <!-- Flowers appear here -->
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-2 w-full md:w-60">
+                <div class="flex justify-between text-sm text-slate-600">
+                    <span>題目：<span id="question-number">0</span> / <span id="questions-per-round">5</span></span>
+                    <span>已答對：<span id="correct-count">0</span> 題</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                    <div id="progress-bar" class="h-2 rounded-full bg-gradient-to-r from-pink-400 to-emerald-400" style="width: 0%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 「你好棒」訊息 -->
+        <div id="great-job-banner" class="hidden mb-4 text-center">
+            <div class="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-2 rounded-full text-lg font-semibold">
+                <span>🌟 你好棒！全部答對，集滿五朵花！🌟</span>
+            </div>
+        </div>
+
+        <!-- 題目區 -->
+        <div id="quiz-area">
+            <h2 id="question-text" class="text-xl md:text-2xl font-semibold text-slate-900 mb-4 min-h-[4rem]">
+                讀取題目中…
+            </h2>
+
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                <!-- 選項按鈕由 JS 產生 -->
+            </div>
+
+            <!-- 解說區 -->
+            <div id="feedback-area" class="hidden mt-4 p-4 rounded-xl border text-sm">
+                <p id="feedback-title" class="font-semibold mb-2"></p>
+                <p id="feedback-en" class="mb-2"></p>
+                <p id="feedback-zh" class="text-slate-600"></p>
+                <button id="next-button"
+                        class="mt-4 w-full md:w-auto bg-sky-600 hover:bg-sky-700 text-white font-semibold px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled>
+                    下一題 →
+                </button>
+            </div>
+
+            <!-- 完成區 -->
+            <div id="end-area" class="hidden mt-6 text-center">
+                <h3 class="text-2xl font-bold text-slate-800 mb-2">本輪測驗完成 ✅</h3>
+                <p class="text-slate-600 mb-4">
+                    本次共答對 <span id="final-correct-count">0</span> 題 / <span id="final-total-count">5</span> 題。
+                </p>
+                <button id="retry-button"
+                        class="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-3 rounded-full">
+                    重新測驗，再來五題 🎮
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 音效（請把 mp3 檔放在同一資料夾，檔名對應即可） -->
+    <!-- 背景音樂：輕快循環 -->
+    <audio id="bg-music" loop>
+        <!-- 如：<source src="bg-music.mp3" type="audio/mpeg" /> -->
+    </audio>
+    <!-- 答對：鼓掌聲 -->
+    <audio id="correct-sound">
+        <!-- 如：<source src="clap.mp3" type="audio/mpeg" /> -->
+    </audio>
+    <!-- 答錯：一聲鼓 -->
+    <audio id="wrong-sound">
+        <!-- 如：<source src="drum.mp3" type="audio/mpeg" /> -->
+    </audio>
+    <!-- 完成：眾人歡呼 -->
+    <audio id="cheer-sound">
+        <!-- 如：<source src="cheer.mp3" type="audio/mpeg" /> -->
+    </audio>
+
+    <script>
+        // =========================================
+        // 1. 題庫（40 題，題目與選項順序保持不變）
+        // =========================================
+        const allQuestions = [
+            // Chapter 8
+            {
+                question: "Which of the following best describes an argument in logic?",
+                options: [
+                    "A) A heated dispute between two people.",
+                    "B) A set of statements in which some provide reasons for believing another statement is true.",
+                    "C) A speech designed to entertain the audience.",
+                    "D) Any persuasive message regardless of evidence."
+                ],
+                correctIndex: 1,
+                enRationale: "An argument in logic is simply a structure. It’s not necessarily a fight or a disagreement. It’s a group of sentences where you use certain statements (the premises) to justify or support the truth of another statement (the conclusion). It’s all about the relationship between the premises and the conclusion.",
+                zhRationale: "在邏輯中，論證僅僅是一種結構。它不一定是爭吵或意見不合。它是一組語句，你利用其中某些陳述（前提）來證明或支持另一個陳述（結論）的真實性。關鍵在於前提和結論之間的關係。"
+            },
+            {
+                question: "What is an enthymeme in rhetorical reasoning?",
+                options: [
+                    "A) A complete syllogism showing every logical step.",
+                    "B) A shortened argument with an unstated premise the audience fills in.",
+                    "C) A type of emotional appeal without any reasoning.",
+                    "D) A fallacy based on attacking a person instead of the argument."
+                ],
+                correctIndex: 1,
+                enRationale: "An enthymeme is basically a \"lazy\" argument. It’s a rhetorical syllogism where the speaker leaves out a premise because they assume the audience already knows it or believes it.",
+                zhRationale: "簡言之，省略推理／修辭推理 (enthymeme) 是一種「偷懶」的論證。這是一種修辭三段論，講者省略了一個前提，因為他們假設聽眾已經知道或相信這個前提。"
+            },
+            {
+                question: "Which step comes first in Monroe’s Motivated Sequence for persuasive speaking?",
+                options: [
+                    "A) Need",
+                    "B) Satisfaction",
+                    "C) Attention",
+                    "D) Visualization"
+                ],
+                correctIndex: 2,
+                enRationale: "You can't persuade anyone if they aren't listening! Monroe's Motivated Sequence is a five-step organizational plan, and the very first thing you must do is grab the audience's attention.",
+                zhRationale: "如果聽眾不聽，你就無法說服任何人！Monroe 的動機式推論法的第一步就是吸引聽眾的注意力 (Attention)。"
+            },
+            {
+                question: "In the Toulmin Model, which component connects data to the claim?",
+                options: [
+                    "A) Backing",
+                    "B) Qualifier",
+                    "C) Warrant",
+                    "D) Rebuttal"
+                ],
+                correctIndex: 2,
+                enRationale: "The Warrant is the invisible bridge. It’s the rule or underlying assumption that lets you jump from your evidence (Data) to your conclusion (Claim).",
+                zhRationale: "保證 (Warrant) 就是那座隱形的橋樑。它是潛在的規則或假設，允許你從證據（Data）跳到你的結論（Claim）。"
+            },
+            {
+                question: "Who carries the burden of proof in a debate or legal case?",
+                options: [
+                    "A) The party making the claim or accusation.",
+                    "B) The neutral moderator.",
+                    "C) The audience or jury.",
+                    "D) The defending party who denies the claim."
+                ],
+                correctIndex: 0,
+                enRationale: "The rule is simple: whoever asserts, must prove. The burden of proof is always on the person proposing a new idea, making an accusation, or suggesting a change to the current situation.",
+                zhRationale: "規則很簡單：誰主張，誰舉證。舉證責任總是落在提出新觀點、提出指控或建議改變現狀的一方。"
+            },
+            {
+                question: "What distinguishes a universal audience from a particular audience?",
+                options: [
+                    "A) Universal audience includes all rational beings; particular audience is a specific real group.",
+                    "B) Universal audience refers to experts only; particular audience means students only.",
+                    "C) Universal audience is the actual people present; particular audience is imaginary.",
+                    "D) There is no difference between them."
+                ],
+                correctIndex: 0,
+                enRationale: "The Universal Audience is an ideal, imaginary group of perfectly rational, unbiased people. A particular audience is the specific, real group you address.",
+                zhRationale: "普世聽眾是一個理想的虛構群體，而特定聽眾則是你實際面對的那群具體、真實的人。"
+            },
+            {
+                question: "In argumentation theory, what is presumption?",
+                options: [
+                    "A) A temporary acceptance of a position until proven otherwise.",
+                    "B) The final conclusion of a speech.",
+                    "C) The emotional tone of a claim.",
+                    "D) A statistical average supporting a point."
+                ],
+                correctIndex: 0,
+                enRationale: "Presumption is the starting bias: one side is considered correct or innocent until the opposing side fulfills its burden of proof.",
+                zhRationale: "推定就是起始的偏向：在對方提出足夠證據之前，其中一方先被視為正確或無辜。"
+            },
+            {
+                question: "What is the main difference between logically dependent and logically independent arguments?",
+                options: [
+                    "A) Dependent arguments rely on each other in series; independent ones work separately in parallel.",
+                    "B) Dependent arguments use emotion; independent ones use logic.",
+                    "C) Independent arguments require more evidence than dependent ones.",
+                    "D) Dependent arguments are only used in law; independent ones in advertising."
+                ],
+                correctIndex: 0,
+                enRationale: "Dependent premises must all hold for the conclusion to stand; independent premises each provide separate support.",
+                zhRationale: "相互依賴的前提必須同時成立，結論才站得住腳；相互獨立的前提則各自提供支持。"
+            },
+            {
+                question: "Which statement best defines a fallacy?",
+                options: [
+                    "A) A strong argument supported by valid reasoning.",
+                    "B) A mistaken or deceptive argument that appears logical but is invalid.",
+                    "C) A type of emotional appeal in motivational speaking.",
+                    "D) A factual disagreement between two experts."
+                ],
+                correctIndex: 1,
+                enRationale: "A fallacy is an error in logic: an argument that sounds convincing but has a fundamentally flawed structure or reasoning process.",
+                zhRationale: "謬誤就是邏輯上的錯誤：表面有說服力，但其結構或推理過程有根本缺陷的論證。"
+            },
+            {
+                question: "Which of the following is a logical fallacy?",
+                options: [
+                    "A) “We should trust him because he’s famous.”",
+                    "B) “Our data shows consistent results.”",
+                    "C) “Evidence clearly supports this point.”",
+                    "D) “Research from experts confirms the claim.”"
+                ],
+                correctIndex: 0,
+                enRationale: "This is an Appeal to Authority (irrelevant authority), asking people to believe a claim based on fame rather than expertise or evidence.",
+                zhRationale: "這是一種訴諸不相關權威的謬誤：要求人們因為某人很有名就相信其主張，而不是根據專業或證據。"
+            },
+
+            // Chapter 11
+            {
+                question: "Compared to scientific explanation, narrative explanation primarily:",
+                options: [
+                    "A) Predicts natural laws",
+                    "B) Creates meaning through storytelling structure",
+                    "C) Eliminates uncertainty",
+                    "D) Provides statistical precision"
+                ],
+                correctIndex: 1,
+                enRationale: "Narrative explanation focuses on how people use story structure to create personal and cultural meaning.",
+                zhRationale: "敘事解釋關注人們如何運用故事結構來創造個人與文化的意義。"
+            },
+            {
+                question: "The Rational World Paradigm assumes that:",
+                options: [
+                    "A) Humans reason mainly through stories",
+                    "B) Logic and evidence are the primary basis for persuasion",
+                    "C) Emotions matter more than logic",
+                    "D) All communication is circular"
+                ],
+                correctIndex: 1,
+                enRationale: "It assumes humans are rational and that persuasion must rely on formal logic and strong evidence.",
+                zhRationale: "理性世界典範假設人類是理性的，因此說服必須依賴形式邏輯與強而有力的證據。"
+            },
+            {
+                question: "Fisher argues that humans are best described as:",
+                options: [
+                    "A) Homo narrans",
+                    "B) Homo economicus",
+                    "C) Homo logicus",
+                    "D) Homo symbolicus only"
+                ],
+                correctIndex: 0,
+                enRationale: "Walter Fisher proposes Homo narrans (storytelling man) as our fundamental nature.",
+                zhRationale: "Fisher 主張人類最適合被描述為敘事人 (Homo narrans)。"
+            },
+            {
+                question: "Fisher's narrative paradigm challenges which major assumption of traditional rhetorical theory?",
+                options: [
+                    "A) That narratives are only entertainment",
+                    "B) That persuasion must rely on formal logic",
+                    "C) That audiences have no agency",
+                    "D) That values cannot be studied"
+                ],
+                correctIndex: 1,
+                enRationale: "It challenges the belief that persuasion is effective only when based on formal, technical logic.",
+                zhRationale: "敘事典範挑戰了「說服必須依賴正式技術性邏輯」的假設。"
+            },
+            {
+                question: "Which concept in Fisher's narrative paradigm refers to whether a story 'hangs together' logically and structurally?",
+                options: [
+                    "A) Narrative fidelity",
+                    "B) Narrative probability (coherence)",
+                    "C) Symbolic convergence",
+                    "D) Frame alignment"
+                ],
+                correctIndex: 1,
+                enRationale: "Narrative probability (coherence) asks if the story is internally consistent and structurally sound.",
+                zhRationale: "敘事蓋然性／連貫性檢查故事內部是否一致、結構是否合理。"
+            },
+            {
+                question: "Which question best tests narrative fidelity?",
+                options: [
+                    "A) Does the story have many characters?",
+                    "B) Does the story ring true with our lived experience?",
+                    "C) Is the story short and memorable?",
+                    "D) Does the story use statistics?"
+                ],
+                correctIndex: 1,
+                enRationale: "Narrative fidelity asks whether the story aligns with what we know and value in real life.",
+                zhRationale: "敘事忠實性詢問故事是否與我們的生活經驗與價值觀相符。"
+            },
+            {
+                question: "What is the main goal of narrative criticism?",
+                options: [
+                    "A. To judge grammar only",
+                    "B. To remove emotions from stories",
+                    "C. To measure story length",
+                    "D. To analyze how stories create meaning"
+                ],
+                correctIndex: 3,
+                enRationale: "Narrative criticism studies how stories are structured and how they create meaning.",
+                zhRationale: "敘事批評關注故事如何被組織、如何創造意義。"
+            },
+            {
+                question: "Narrative analysis looks for:",
+                options: [
+                    "A. Scientific formulas",
+                    "B. Random numbers",
+                    "C. Patterns, characters, conflicts, and resolutions",
+                    "D. Only the author's biography"
+                ],
+                correctIndex: 2,
+                enRationale: "It looks for patterns, characters, conflicts, and resolutions that make up a story.",
+                zhRationale: "敘事分析會尋找模式、角色、衝突與解決等基本要素。"
+            },
+            {
+                question: "In narrative criticism, audiences matter because:",
+                options: [
+                    "A. Meaning depends partly on audience values",
+                    "B. Only audiences decide the plot",
+                    "C. Audiences write all stories",
+                    "D. Audiences ignore meaning"
+                ],
+                correctIndex: 0,
+                enRationale: "Meaning is negotiated between story and listener; audience values shape interpretation.",
+                zhRationale: "意義是在故事與聽眾之間協商產生的，部分取決於聽眾的價值觀。"
+            },
+            {
+                question: "Why can narratives shape social reality?",
+                options: [
+                    "A. Stories have no influence",
+                    "B. Narratives block communication",
+                    "C. Narratives erase culture",
+                    "D. Narratives help people interpret events and make meaning"
+                ],
+                correctIndex: 3,
+                enRationale: "Narratives give frameworks for interpreting events and constructing social reality.",
+                zhRationale: "敘事提供解讀事件的框架，幫助人們建構社會現實。"
+            },
+
+            // Chapter 12
+            {
+                question: "In a messaging app, a friend sends you only three emojis: a running person, a clock, and a sweat drop. According to the concept of visual culture, what does this example BEST illustrate?",
+                options: [
+                    "A) Visual rhetoric is rare and only appears in museums",
+                    "B) Visual symbols form a shared language that people learn through culture",
+                    "C) Emojis have fixed meanings that never change across cultures",
+                    "D) Visual symbols are less important than written words in modern life"
+                ],
+                correctIndex: 1,
+                enRationale: "Emojis work as visual shorthand that relies on shared cultural understanding.",
+                zhRationale: "表情符號是一種依賴共同文化理解的視覺速記。"
+            },
+            {
+                question: "A student watches a data map showing COVID-19 cases across a country. Many colored dots appear at once, giving a 'big picture' impression of the outbreak. Which term from visual culture does this BEST represent?",
+                options: [
+                    "A) Denotative meaning",
+                    "B) Presentational symbolism",
+                    "C) Oppositional reading",
+                    "D) Monumental rhetoric"
+                ],
+                correctIndex: 1,
+                enRationale: "Presentational symbolism is perceived all at once and gives an immediate holistic view.",
+                zhRationale: "呈現性符號是一次性被感知，立即帶來整體印象的視覺形式。"
+            },
+            {
+                question: "You see a famous photograph of soldiers raising a flag at the end of a war. Everyone in your country recognizes it, and it is often used to celebrate national victory. Which concept BEST describes this kind of image?",
+                options: [
+                    "A) A random news photo",
+                    "B) A family snapshot",
+                    "C) An iconic photograph",
+                    "D) An image event"
+                ],
+                correctIndex: 2,
+                enRationale: "An iconic photograph is widely recognized, historically significant, and culturally meaningful.",
+                zhRationale: "標誌性照片是在公共文化中被廣泛認可、具有歷史與文化意義的圖像。"
+            },
+            {
+                question: "A local restaurant hangs a large, beautifully lit photo of its most popular noodle dish at the entrance. Customers often take pictures in front of it and post them online. According to visual rhetoric, why is this photo NOT an iconic photograph?",
+                options: [
+                    "A) It is not emotionally powerful for anyone",
+                    "B) It is not widely recognized as part of public culture or a historical event",
+                    "C) It does not use any symbols",
+                    "D) It cannot be shared on social media"
+                ],
+                correctIndex: 1,
+                enRationale: "Iconic photos are tied to major historical events and shared public culture; this restaurant image lacks that.",
+                zhRationale: "標誌性照片必須與重大歷史事件及共享公共文化相關，餐廳照片欠缺這點。"
+            },
+            {
+                question: "During a protest, participants lie silently on the ground in front of a government building to represent victims of police violence. Their still bodies are filmed and shared widely on the news. Which concept BEST describes this use of the body?",
+                options: [
+                    "A) Denotative reading",
+                    "B) Presentational symbolism",
+                    "C) Body rhetoric and enactment",
+                    "D) Monumental rhetoric"
+                ],
+                correctIndex: 2,
+                enRationale: "This is body rhetoric and enactment: the body itself becomes the argument.",
+                zhRationale: "這是身體修辭與具體展演：身體本身成為論證。"
+            },
+            {
+                question: "A woman climbs onto a statue outside a courthouse, raises her fist, and holds a '#MeToo' sign during a judge's swearing-in. News photos of this moment go viral. According to the chapter, why is this an example of enactment?",
+                options: [
+                    "A) Because the protest happened near a famous building",
+                    "B) Because hashtags always create iconic photographs",
+                    "C) Because her body and action function as the proof of the argument she makes",
+                    "D) Because it is a random expression of personal emotion"
+                ],
+                correctIndex: 2,
+                enRationale: "Her identity and physical action serve as crucial evidence for the Me Too claim.",
+                zhRationale: "她的身分與行動本身就是「Me Too」主張的證據。"
+            },
+            {
+                question: "Visitors walk through a memorial where water falls into two large square pools built on the footprints of former towers. The names of the dead are carved around the pools. Which concept BEST fits this example?",
+                options: [
+                    "A) Monumental rhetoric",
+                    "B) Iconic photograph",
+                    "C) Image event",
+                    "D) Oppositional reading"
+                ],
+                correctIndex: 0,
+                enRationale: "This is monumental rhetoric: a permanent commemorative structure shaping collective memory.",
+                zhRationale: "這是紀念性修辭：透過永久結構來形塑集體記憶。"
+            },
+            {
+                question: "An environmental group stages a dramatic action at sea: activists in small boats place themselves between a whaling ship and the whales. They invite TV crews to film the confrontation so that powerful images of the event will spread worldwide. What is this an example of?",
+                options: [
+                    "A) A dominant reading",
+                    "B) An image event",
+                    "C) A family photograph",
+                    "D) A negotiated reading"
+                ],
+                correctIndex: 1,
+                enRationale: "This is an image event: a staged visual spectacle designed for media circulation.",
+                zhRationale: "這是圖像事件：刻意策劃、為媒體傳播而設計的視覺行動。"
+            },
+            {
+                question: "A soda company releases an advertisement that copies the style of street protests: diverse young people march, hold signs, and dance together. At the end, a celebrity hands a soda to a police officer and everyone cheers. Critics say the company is using 'movement aesthetics' to sell products. Which statement BEST explains why this is a problematic image event?",
+                options: [
+                    "A) Because image events can only be created by governments",
+                    "B) Because the ad uses protest imagery in a disingenuous way to promote a brand",
+                    "C) Because images cannot create emotions",
+                    "D) Because protests should never be filmed"
+                ],
+                correctIndex: 1,
+                enRationale: "The ad commercially co-opts serious political action, trivializing real struggles.",
+                zhRationale: "這支廣告以商業方式挪用嚴肅的政治行動，輕忽真實抗爭。"
+            },
+            {
+                question: "A viewer looks at the famous photograph of soldiers raising a flag. She thinks, 'This image celebrates teamwork and sacrifice, but it also hides the suffering of civilians in war.' According to the chapter's key terms, how would you describe her interpretation?",
+                options: [
+                    "A) A dominant reading",
+                    "B) A negotiated reading",
+                    "C) An oppositional reading",
+                    "D) A denotative reading only"
+                ],
+                correctIndex: 1,
+                enRationale: "She partly accepts the dominant message but also resists it: a negotiated reading.",
+                zhRationale: "她部分接受主流訊息又提出質疑，這是協商式解讀。"
+            },
+
+            // Chapter 14
+            {
+                question: "A student says, 'If people just change their attitudes, society will automatically become fair. Material things are not important.' Which philosophical view is closest to this statement?",
+                options: [
+                    "A) Idealism",
+                    "B) Materialism",
+                    "C) Myth",
+                    "D) Demystification"
+                ],
+                correctIndex: 0,
+                enRationale: "Idealism holds that ideas and consciousness are the primary forces shaping the world.",
+                zhRationale: "唯心主義認為觀念與意識是塑造世界的主要力量。"
+            },
+            {
+                question: "A factory worker says, 'The company owns the machines and decides our wages; that structure shapes how we think about success.' Which keyword from below best matches this view?",
+                options: [
+                    "A) Idealism",
+                    "B) Materialism",
+                    "C) Myth",
+                    "D) Persona"
+                ],
+                correctIndex: 1,
+                enRationale: "Materialism emphasizes material conditions and economic structures as shaping consciousness.",
+                zhRationale: "唯物主義強調物質條件與經濟結構形塑人類意識。"
+            },
+            {
+                question: "A popular food commercial shows smiling families and says, 'Happiness is buying this brand,' turning a simple meal into a symbol of a perfect family life. According to Barthes, what is this an example of?",
+                options: [
+                    "A) First-order signification (basic sign)",
+                    "B) Second-order signification (sign)",
+                    "C) Third-order signification (myth)",
+                    "D) Synchronic analysis"
+                ],
+                correctIndex: 2,
+                enRationale: "This is myth: a higher-order sign that links the brand to an ideological image of perfect family life.",
+                zhRationale: "這是第三層指稱──神話：把品牌與「完美家庭生活」的意識形態連結起來。"
+            },
+            {
+                question: "On the famous Paris-Match cover, a child in a French uniform salutes the flag, suggesting that the French empire is natural and good. What does this added meaning illustrate?",
+                options: [
+                    "A) Personal ethos",
+                    "B) Logical argument (logos)",
+                    "C) Ideological myth supporting colonial power",
+                    "D) Simple denotation (literal meaning)"
+                ],
+                correctIndex: 2,
+                enRationale: "The ideological myth suggests the colonial empire is honorable and supported.",
+                zhRationale: "這個意識形態神話暗示殖民帝國是光榮且獲得臣民支持的。"
+            },
+            {
+                question: "A person knows that fast fashion hurts the environment, but they keep buying clothes marked 'eco' and tell themselves, 'My shopping is different.' This mental move is called:",
+                options: [
+                    "A) Myth",
+                    "B) Disavowal",
+                    "C) Demystification",
+                    "D) Ideograph"
+                ],
+                correctIndex: 1,
+                enRationale: "Disavowal is acknowledging a harmful fact while denying its personal relevance.",
+                zhRationale: "否認是承認某個有害事實，同時否定其與自己有關。"
+            },
+            {
+                question: "In the film 'They Live,' when the hero puts on special glasses and suddenly sees hidden commands like 'OBEY' behind normal advertisements, this moment can be used to explain which term?",
+                options: [
+                    "A) Myth-making",
+                    "B) Demystification",
+                    "C) Disavowal",
+                    "D) Persona"
+                ],
+                correctIndex: 1,
+                enRationale: "Demystification exposes hidden ideological assumptions behind seemingly neutral messages.",
+                zhRationale: "去神話化就是揭露看似中立訊息背後的意識形態。"
+            },
+            {
+                question: "Which option best describes 'an ideograph', such as 'freedom of speech' or 'rule of law,' as McGee defines it?",
+                options: [
+                    "A) A long story about the past",
+                    "B) A technical economic formula",
+                    "C) A powerful keyword that guides public beliefs and actions",
+                    "D) A private opinion with no public effect"
+                ],
+                correctIndex: 2,
+                enRationale: "An ideograph is a high-order abstract political term that justifies beliefs and guides public action.",
+                zhRationale: "意符是用來正當化信念並引導公共行動的高階抽象政治詞。"
+            },
+            {
+                question: "When we study how a term like 'freedom' changes its meaning over many years in one society, McGee calls this kind of study:",
+                options: [
+                    "A) Diachronic analysis",
+                    "B) Synchronic analysis",
+                    "C) Mythic analysis",
+                    "D) Material analysis"
+                ],
+                correctIndex: 0,
+                enRationale: "Diachronic analysis studies how a phenomenon changes across time.",
+                zhRationale: "歷時性分析研究某種現象在時間推移中的變化。"
+            },
+            {
+                question: "A public speech creates a heroic image of the speaker as someone who 'stands with the people' even though the policies mainly benefit elites. Which persona concept explains this crafted speaker identity?",
+                options: [
+                    "A) First Persona",
+                    "B) Second Persona",
+                    "C) Third Persona",
+                    "D) Fourth Persona"
+                ],
+                correctIndex: 0,
+                enRationale: "First Persona is the constructed identity of the speaker in the text.",
+                zhRationale: "第一人稱指的是講者在文本中塑造出來的身份樣貌。"
+            },
+            {
+                question: "A government official announces, 'I hereby declare a state of emergency,' and the declaration immediately changes what citizens are legally allowed to do. Which concept does this illustrate?",
+                options: [
+                    "A) Ideograph",
+                    "B) Speech Act",
+                    "C) Materialism",
+                    "D) Disavowal"
+                ],
+                correctIndex: 1,
+                enRationale: "This is a performative speech act: saying it under proper conditions changes legal reality.",
+                zhRationale: "這是表現式言語行為：在適當情境下說出，就會直接改變法律現實。"
+            }
+        ];
+
+        // =========================================
+        // 2. 遊戲狀態變數
+        // =========================================
+        const QUESTIONS_PER_ROUND = 5;
+
+        let currentRoundQuestions = [];
+        let currentIndex = 0;
+        let correctCount = 0;
+        let flowerCount = 0;
+        let hasStartedBgMusic = false;
+
+        // DOM 元件
+        const flowerGarden = document.getElementById('flower-garden');
+        const questionNumberSpan = document.getElementById('question-number');
+        const questionsPerRoundSpan = document.getElementById('questions-per-round');
+        const correctCountSpan = document.getElementById('correct-count');
+        const progressBar = document.getElementById('progress-bar');
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackArea = document.getElementById('feedback-area');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackEn = document.getElementById('feedback-en');
+        const feedbackZh = document.getElementById('feedback-zh');
+        const nextButton = document.getElementById('next-button');
+        const endArea = document.getElementById('end-area');
+        const finalCorrectCountSpan = document.getElementById('final-correct-count');
+        const finalTotalCountSpan = document.getElementById('final-total-count');
+        const retryButton = document.getElementById('retry-button');
+        const greatJobBanner = document.getElementById('great-job-banner');
+
+        // 音效
+        const bgMusic = document.getElementById('bg-music');
+        const correctSound = document.getElementById('correct-sound');
+        const wrongSound = document.getElementById('wrong-sound');
+        const cheerSound = document.getElementById('cheer-sound');
+
+        questionsPerRoundSpan.textContent = QUESTIONS_PER_ROUND;
+        finalTotalCountSpan.textContent = QUESTIONS_PER_ROUND;
+
+        // =========================================
+        // 3. 工具函式
+        // =========================================
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function pickRandomQuestions() {
+            const indices = Array.from(allQuestions.keys());
+            shuffle(indices);
+            const selectedIndices = indices.slice(0, QUESTIONS_PER_ROUND);
+            currentRoundQuestions = selectedIndices.map(i => allQuestions[i]);
+        }
+
+        function updateFlowerGarden() {
+            flowerGarden.innerHTML = '';
+            for (let i = 0; i < flowerCount; i++) {
+                const span = document.createElement('span');
+                span.textContent = '🌸';
+                flowerGarden.appendChild(span);
+            }
+        }
+
+        function updateProgress() {
+            questionNumberSpan.textContent = Math.min(currentIndex + 1, QUESTIONS_PER_ROUND);
+            correctCountSpan.textContent = correctCount;
+            const progressPercent = (currentIndex / QUESTIONS_PER_ROUND) * 100;
+            progressBar.style.width = progressPercent + '%';
+        }
+
+        function resetState() {
+            currentIndex = 0;
+            correctCount = 0;
+            flowerCount = 0;
+            updateFlowerGarden();
+            updateProgress();
+            feedbackArea.classList.add('hidden');
+            endArea.classList.add('hidden');
+            greatJobBanner.classList.add('hidden');
+        }
+
+        function playBgMusicOnce() {
+            if (!hasStartedBgMusic) {
+                hasStartedBgMusic = true;
+                bgMusic.play().catch(() => {
+                    // 若被瀏覽器阻擋，就忽略，不影響遊戲
+                });
+            }
+        }
+
+        // =========================================
+        // 4. 題目顯示與作答
+        // =========================================
+        function loadCurrentQuestion() {
+            if (currentIndex >= QUESTIONS_PER_ROUND) {
+                showEndScreen();
+                return;
+            }
+
+            const q = currentRoundQuestions[currentIndex];
+
+            questionTextEl.textContent = q.question;
+            optionsContainer.innerHTML = '';
+            feedbackArea.classList.add('hidden');
+
+            q.options.forEach((optText, idx) => {
+                const btn = document.createElement('button');
+                btn.className =
+                    'option-button text-left w-full px-4 py-3 border-2 border-slate-200 rounded-lg bg-white text-slate-800 text-sm md:text-base';
+                btn.textContent = optText;
+                btn.disabled = false;
+
+                btn.addEventListener('click', () => handleAnswer(btn, idx, q));
+                optionsContainer.appendChild(btn);
+            });
+
+            updateProgress();
+        }
+
+        function handleAnswer(selectedButton, selectedIndex, questionObj) {
+            playBgMusicOnce();
+
+            // 停用所有按鈕
+            const buttons = Array.from(optionsContainer.children);
+            buttons.forEach(b => {
+                b.disabled = true;
+                b.classList.add('cursor-not-allowed');
+            });
+
+            const correctIndex = questionObj.correctIndex;
+            const correctButton = buttons[correctIndex];
+
+            correctButton.classList.add('correct-answer');
+
+            if (selectedIndex === correctIndex) {
+                correctCount++;
+                flowerCount++;
+                updateFlowerGarden();
+                correctSound.play().catch(() => {});
+                feedbackTitle.textContent = "✅ Correct! 答對了！";
+                feedbackArea.classList.remove('border-red-200', 'bg-red-50', 'text-red-800');
+                feedbackArea.classList.add('border-emerald-200', 'bg-emerald-50', 'text-emerald-800');
+            } else {
+                selectedButton.classList.add('incorrect-answer');
+                wrongSound.play().catch(() => {});
+                feedbackTitle.textContent = "❌ Incorrect. 答錯了。";
+                feedbackArea.classList.remove('border-emerald-200', 'bg-emerald-50', 'text-emerald-800');
+                feedbackArea.classList.add('border-red-200', 'bg-red-50', 'text-red-800');
+            }
+
+            feedbackEn.textContent = "English: " + questionObj.enRationale;
+            feedbackZh.textContent = "中文: " + questionObj.zhRationale;
+            feedbackArea.classList.remove('hidden');
+
+            // 若已集滿 5 朵花，顯示「你好棒」
+            if (flowerCount >= QUESTIONS_PER_ROUND) {
+                greatJobBanner.classList.remove('hidden');
+            }
+
+            // 下一題按鈕
+            nextButton.disabled = false;
+            nextButton.onclick = () => {
+                nextButton.disabled = true;
+                currentIndex++;
+                loadCurrentQuestion();
+            };
+
+            updateProgress();
+        }
+
+        function showEndScreen() {
+            endArea.classList.remove('hidden');
+            finalCorrectCountSpan.textContent = correctCount;
+            cheerSound.play().catch(() => {});
+        }
+
+        function startNewRound() {
+            pickRandomQuestions();
+            resetState();
+            loadCurrentQuestion();
+        }
+
+        // =========================================
+        // 5. 初始化
+        // =========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            startNewRound();
+            retryButton.addEventListener('click', () => {
+                startNewRound();
+            });
+        });
+    </script>
+</body>
+</html>
