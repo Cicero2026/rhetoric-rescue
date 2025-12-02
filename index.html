@@ -1,86 +1,85 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rhetoric Rescue - 遊戲首頁</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rhetoric Rescue｜世新大學語藝學期末測驗</title>
 
-    <style>
-        body {
-            font-family: "Inter", Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #d9e4ff, #fef7ff);
-            animation: bgmove 10s infinite alternate ease-in-out;
-        }
+  <!-- Tailwind CDN（只用在首頁，美觀又簡單） -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-        @keyframes bgmove {
-            0% { background: linear-gradient(135deg, #d9e4ff, #fef7ff); }
-            50% { background: linear-gradient(135deg, #f9e3ff, #e0f7ff); }
-            100% { background: linear-gradient(135deg, #e5f3ff, #fff0f6); }
-        }
-
-        .container {
-            text-align: center;
-            padding: 40px;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            max-width: 480px;
-            width: 85%;
-        }
-
-        h1 {
-            margin: 0 0 20px 0;
-            font-size: 2rem;
-            color: #333;
-            letter-spacing: 1px;
-        }
-
-        p {
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 1.1rem;
-        }
-
-        a.button {
-            display: inline-block;
-            padding: 15px 35px;
-            background: #4CAF50;
-            color: white;
-            font-size: 1.2rem;
-            border-radius: 12px;
-            text-decoration: none;
-            transition: 0.2s ease;
-        }
-
-        a.button:hover {
-            background: #43a047;
-            transform: translateY(-3px);
-            box-shadow: 0 5px 10px rgba(0,0,0,0.15);
-        }
-
-        .footer {
-            margin-top: 25px;
-            color: #aaa;
-            font-size: 0.9rem;
-        }
-    </style>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    }
+    /* 背景柔和漸層動畫 */
+    .bg-animated {
+      background: linear-gradient(135deg, #dbeafe, #fce7f3);
+      background-size: 200% 200%;
+      animation: bgmove 12s ease-in-out infinite alternate;
+    }
+    @keyframes bgmove {
+      0% {
+        background-position: 0% 0%;
+      }
+      50% {
+        background-position: 50% 100%;
+      }
+      100% {
+        background-position: 100% 0%;
+      }
+    }
+  </style>
 </head>
 
-<body>
-    <div class="container">
-        <h1>🎉 Rhetoric Rescue 線上測驗 🎉</h1>
-        <p>世新大學語藝學課程｜快速測驗與複習</p>
+<body class="bg-animated min-h-screen flex items-center justify-center px-4">
+  <main
+    class="bg-white/95 backdrop-blur shadow-2xl rounded-3xl max-w-xl w-full px-8 py-10 md:px-10 md:py-12"
+  >
+    <!-- 標題區 -->
+    <section class="text-center mb-8">
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-3">
+        🎓 世新大學語藝學｜<span class="text-indigo-600">Rhetoric Rescue</span>
+      </h1>
+      <p class="text-gray-600 text-sm md:text-base leading-relaxed">
+        這是一個幫助你複習
+        <span class="font-semibold">論證（Ch.8）／敘事（Ch.11）／視覺修辭（Ch.12）／意識形態（Ch.14）</span>
+        的小遊戲網站。<br />
+        建議使用耳機，享受音效，一邊玩一邊複習關鍵概念。
+      </p>
+    </section>
 
-        <a class="button" href="RG.html">開始測驗</a>
+    <!-- 按鈕區 -->
+    <section class="space-y-4 mb-8">
+      <a
+        href="RG.html"
+        class="block w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3.5 px-4 rounded-2xl text-lg shadow-lg shadow-indigo-300 transition transform hover:-translate-y-0.5"
+      >
+        🚀 開始期末題庫遊戲（40 題）
+      </a>
 
-        <div class="footer">© 2025 世新大學語藝學課程</div>
-    </div>
+      <!-- 預留未來小遊戲入口（先給淡色，不會造成困擾） -->
+      <div
+        class="border border-dashed border-gray-300 rounded-2xl px-4 py-3 text-center text-xs md:text-sm text-gray-400"
+      >
+        🌸 「五題小花」練習模式、更多語藝學小遊戲，將在之後加入…
+      </div>
+    </section>
+
+    <!-- 使用說明 -->
+    <section class="text-gray-500 text-xs md:text-sm leading-relaxed">
+      <h2 class="font-semibold text-gray-700 mb-1">使用說明</h2>
+      <ul class="list-disc list-inside space-y-1">
+        <li>請使用 Chrome、Edge 或 Safari 最新版本。</li>
+        <li>手機也可以遊玩，建議改成橫向畫面，題目會更清楚。</li>
+        <li>作為期末考前複習工具，歡迎多次練習、重覆作答。</li>
+      </ul>
+
+      <p class="mt-4 text-right text-[11px] text-gray-400">
+        © 2025 世新大學 語藝學課程 ｜Rhetoric Rescue
+      </p>
+    </section>
+  </main>
 </body>
 </html>
